@@ -1,0 +1,13 @@
+nav {
+    display: flex;
+    flex-direction: row;
+    text-decoration: none;
+    justify-content: center;
+    background-color: gray;
+}
+
+.nav_link{
+    margin: 10px;
+    color: white;
+    text-decoration: none;
+}
