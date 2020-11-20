@@ -1,23 +1,30 @@
-Object.defineProperty(String.prototype, 'hashCode', {
-    value: function () {
-        var hash = 0, i, chr;
-        for (i = 0; i < this.length; i++) {
-            chr = this.charCodeAt(i);
-            hash = ((hash << 5) - hash) + chr;
-            hash |= 0;
-        }
-        return hash;
-    }
-});
-
 const NotFound = {
     template: `
     <p> Not found</p> 
     `
 }
-const Home = {
+Vue.component('blog-post', {
+    props: ['title','body'],
+    template: '<div><h1>{{ title }}</h1><p>{{body}}</p></div>'
+})
+posts= [
+   
+]
+
+Home = {
+    data() {
+        return {
+            posts: posts
+        }
+    },
     template: `
-    <p>Home</p>
+       <div>
+         <blog-post
+          v-for="post in posts"
+          v-bind:title="post.title"
+          v-bind:body="post.body"
+         ></blog-post>
+      </div>
     `
 }
 const Register = {
@@ -54,6 +61,7 @@ const Login = {
             pass = window.localStorage.getItem(this.name);
             if (pass == this.password) {
                 alert("ok");
+                posts.push({ title: 'Hi', body: 'Test app'})
             }
             else {
                 alert("false");
@@ -71,6 +79,9 @@ const Login = {
     `
 }
 const Logout = {
+    created: function () {
+        posts=[]
+    },
     template: `
     <p>Logout</p>
     `
