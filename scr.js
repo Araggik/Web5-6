@@ -1,3 +1,18 @@
+function stringToHash(string) {
+
+    var hash = 0;
+
+    if (string.length == 0) return hash;
+
+    for (i = 0; i < string.length; i++) {
+        char = string.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+
+    return hash;
+} 
+
 const NotFound = {
     template: `
     <p> Not found</p> 
@@ -36,7 +51,19 @@ const Register = {
     },
     methods: {
         save() {
-            window.localStorage.setItem(this.name, this.password);
+            var url = '/reg';
+            var pass = stringToHash(this.password);
+            user = {
+                login: this.name,
+                password: pass,
+            }
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(user),
+            }).done(function (result) {
+                alert("alo");
+            });
         },
     },
     template: ` 

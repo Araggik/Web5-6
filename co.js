@@ -1,6 +1,8 @@
 var http = require('http');
 var path = require('path');
 var fs = require('fs');
+var qs = require('querystring');
+
 http.createServer(function (req, res) {
 
     var filePath = req.url;
@@ -38,20 +40,39 @@ http.createServer(function (req, res) {
 
     })
 
+    Work(req, res);
+    
 }).listen(8080);
 const sqlite3 = require('sqlite3').verbose();
 
-// open the database
-let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATEcm, (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Connected to the chinook database.');
-});
+function Work(request, response) {
+    if (request.method == 'POST') {
 
-db.close((err) => {
-    if (err) {
-        console.error(err.message);
+        if (request.url =='/reg') {
+            request.on('data', function (data) {
+                var row = JSON.parse(data);
+                console.log(row);
+                console.log(row['login']);
+                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATEcm, (err) => {
+                    if (err) {
+                        console.error(err.message);
+                    }
+                    console.log('Connected to the database.');
+                });
+
+                db.run('INSERT INTO user(login,password) VALUES(?,?)', row['login'], row['password']);
+
+                db.close((err) => {
+                    if (err) {
+                        console.error(err.message);
+                    }
+                    console.log('Close the database connection.');
+                })
+            });
+        }
     }
-    console.log('Close the database connection.');
-})
+}
+
+
+
+
