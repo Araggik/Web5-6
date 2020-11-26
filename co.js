@@ -48,28 +48,67 @@ const sqlite3 = require('sqlite3').verbose();
 function Work(request, response) {
     if (request.method == 'POST') {
 
+        
+
         if (request.url =='/reg') {
             request.on('data', function (data) {
-                var row = JSON.parse(data);
-                console.log(row);
-                console.log(row['login']);
-                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATEcm, (err) => {
+                var person = JSON.parse(data);    
+
+                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
+
+
+                db.get('SELECT * FROM User WHERE login =?', person['login'], (err, row) => {
                     if (err) {
-                        console.error(err.message);
+                        return console.error(err.message);
                     }
-                    console.log('Connected to the database.');
+
+                    if (row) {
+                        response.end('Change login');
+                    }
+                    else {
+                        db.run('INSERT INTO user(login,password) VALUES(?,?)', person['login'], person['password']);
+                        response.end('ok');
+                    }
                 });
 
-                db.run('INSERT INTO user(login,password) VALUES(?,?)', row['login'], row['password']);
+                db.close();
+            });                  
+        }  
 
-                db.close((err) => {
+        if (request.url == '/check_pass') {
+            request.on('data', function (data) {
+                var person = JSON.parse(data);
+
+                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
+
+
+                db.get('SELECT * FROM User WHERE login =?', person['login'], (err, row) => {
                     if (err) {
-                        console.error(err.message);
+                        return console.error(err.message);
                     }
-                    console.log('Close the database connection.');
-                })
+
+                    if (person['password'] == row.password) {
+
+                        db.all('SELECT * FROM Tasks WHERE user_id =?', row.id, (err, rows) => {
+                            if (err) {
+                                throw err;
+                            }
+                            var tasks = JSON.stringify(rows);
+                            response.end(tasks);
+
+                            /*rows.forEach((row) => {
+                                console.log(row.name);
+                            });*/
+                        });
+                    }
+                    else {
+                        response.end('false');
+                    }
+                });
+
+                db.close();
             });
-        }
+        }       
     }
 }
 

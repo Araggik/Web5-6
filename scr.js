@@ -18,10 +18,59 @@ const NotFound = {
     <p> Not found</p> 
     `
 }
+
+current = {
+
+}
+
+Edit =  {
+    data() {
+        return {
+            post: current
+        }
+    },
+    methods: {
+        save() {
+        }
+    },
+    template: `
+       <div>
+         Title:
+         <input v-model="post['title']">
+         Body:
+         <input v-model="post['body']">
+         <button v-on:click="save">Save</button>
+      </div>
+    `
+}
+
 Vue.component('blog-post', {
-    props: ['title','body'],
-    template: '<div><h1>{{ title }}</h1><p>{{body}}</p></div>'
+    props: ['id','title', 'body', 'completed'],
+    methods: {
+        show() {
+
+        },
+        send() {
+            current = {
+                id: this.id,
+                title: this.title,
+                body: this.body,
+                completed: this.completed,                
+            }
+            alert("Allo");
+        }
+    },
+    template: `
+      <div>
+       <router-link to='/edit'><button v-on:click="send">Edit</button></router-link>
+       <h1>{{ title }}</h1>
+       <p>{{body}}</p>
+       <p>Complete:{{completed}}</p>
+       <button v-on:click="show">Show Comment</button>
+      </div>
+    `
 })
+
 posts= [
    
 ]
@@ -36,8 +85,10 @@ Home = {
        <div>
          <blog-post
           v-for="post in posts"
+          v-bind:id="post.id"
           v-bind:title="post.title"
           v-bind:body="post.body"
+          v-bind:completed="post.completed"
          ></blog-post>
       </div>
     `
@@ -62,7 +113,7 @@ const Register = {
                 url: url,
                 data: JSON.stringify(user),
             }).done(function (result) {
-                alert("alo");
+                alert(result);
             });
         },
     },
@@ -85,14 +136,23 @@ const Login = {
     },
     methods: {
         check() {
-            pass = window.localStorage.getItem(this.name);
-            if (pass == this.password) {
-                alert("ok");
-                posts.push({ title: 'Hi', body: 'Test app'})
+            var pass = stringToHash(this.password);
+            user = {
+                login: this.name,
+                password: pass,
             }
-            else {
-                alert("false");
-            }
+            $.ajax({
+                type: "POST",
+                url: '/check_pass',
+                data: JSON.stringify(user),
+            }).done(function (result) {
+                if (result != 'false') {
+                    posts = JSON.parse(result);
+                }
+                else {
+                    alert("Check data");
+                }
+            });
         },
     },
     template: `
@@ -119,6 +179,8 @@ const routes = [
     { path: '/register', component: Register },
     { path: '/login', component: Login },
     { path: '/logout', component: Logout },
+    { path: '/edit', component: Edit},
+    { path: '*', component: NotFound}
 ]
 
 const router = new VueRouter({
