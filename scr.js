@@ -1,3 +1,5 @@
+
+
 function stringToHash(string) {
 
     var hash = 0;
@@ -263,8 +265,9 @@ const Edit = {
         save() {
             this.post['user_id'] = window.localStorage.getItem('user');
             if (!this.post['completed']) {
-                this.post['completed'] = false;
+                this.post['completed'] = 0;
             }
+            alert(JSON.stringify(this.post));
             $.ajax({
                 type: "POST",
                 url: '/update',
@@ -275,6 +278,7 @@ const Edit = {
             current = {};
         },
         del() {
+            alert(JSON.stringify(this.post));
             $.ajax({
                 type: "POST",
                 url: '/delete',
@@ -282,6 +286,7 @@ const Edit = {
             }).done(function (result) {
 
             });
+            current = {};
         }
     },
     template: `

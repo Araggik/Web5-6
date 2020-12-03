@@ -17,7 +17,7 @@ nav {
     flex-direction: row;
     text-decoration: none;
     justify-content: center;
-    background-color: silver;
+    background-color: gray;
 }
 
 .nav_link {
@@ -29,7 +29,7 @@ nav {
 }
 
 .blog {
-   background-color: silver;
+   background-color: gray;
    border-radius: 10px;
    margin: 10px;
 }
