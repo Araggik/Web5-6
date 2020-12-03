@@ -120,7 +120,7 @@ Home = {
     data() {
         return {
             posts: gposts,
-            selected: 1,
+            selected: "",
         }
     },
     methods: {
@@ -128,10 +128,41 @@ Home = {
             window.localStorage.setItem('gposts', res);
         },
         onChange(event) {
-            this.posts.sort(function compareNumbers(a, b) {
-                return a['title'] - b['title'];
-            } );
-            
+            if (this.selected == "Name") {
+                this.posts.sort(function compareNumbers(a, b) {
+                    if (a.title > b.title) {
+                        return 1;
+                    }
+                    if (a.title < b.title) {
+                        return -1;
+                    }
+                    return 0;
+                });
+            }
+            if (this.selected == "Completed") {
+                this.posts.sort(function compareNumbers(a, b) {                   
+                    return a.completed-b.completed;
+                });
+            }
+        }
+    },
+    computed: {
+        dynamicComponent: function () {           
+            return {
+                props: ['posts','selected'],
+                template: `
+                <div>                  
+                  <blog-post
+                    v-for="post in posts"
+                    v-bind:key="post.id"
+                    v-bind:id="post.id"
+                    v-bind:title="post.title"
+                    v-bind:body="post.body"
+                    v-bind:completed="post.completed"
+                  ></blog-post>
+                </div>
+                `,
+            }
         }
     },
     beforeCreate: function () {
@@ -150,24 +181,18 @@ Home = {
         }         
        // gposts = JSON.parse(window.localStorage.getItem('gposts'));
         //this.posts = gposts;
-    },
-    template: `
-       <div>
-         <select  @change="onChange($event)" v-model="selected">
-           <option disabled value="">Choose sort</option>
-           <option>Name</option>
-           <option>Completed</option>
-         </select>
-         <router-link to='/edit'><button>Create</button></router-link>
-         <blog-post
-          v-for="post in posts"
-          v-bind:key="post.id"
-          v-bind:id="post.id"
-          v-bind:title="post.title"
-          v-bind:body="post.body"
-          v-bind:completed="post.completed"
-         ></blog-post>
+    }, 
+    template:`
+     <div>
+      <select  @change="onChange($event)" v-model="selected">
+          <option disabled value="">Choose sort</option>
+          <option>Name</option>
+          <option>Completed</option>
+      </select>
+      <router-link to='/edit'><button>Create</button></router-link>
+      <div v-bind:is="dynamicComponent" v-bind:posts=posts v-bind:selected=selected>
       </div>
+     </div>
     `
 }
 const Register = {
