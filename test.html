@@ -1,7 +1,13 @@
-<script src="vue.js"></script>
-<script src="https://unpkg.com/vue-router@3.4.9/dist/vue-router.js"></script>
-<link rel="stylesheet" href="style.css">
-<main id="app">
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="vue.js"></script>
+    <script src="https://unpkg.com/vue-router@3.4.9/dist/vue-router.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
     <nav>
         <a class="nav_link"><router-link to="/">Home</router-link></a>
         <a class="nav_link"><router-link to="/register">Register</router-link></a>
@@ -9,5 +15,7 @@
         <a class="nav_link"><router-link to="/logout">Logout</router-link></a>
     </nav>
     <router-view></router-view>
-</main>
-<script src="scr.js"></script>
+  </main>
+  <script src="scr.js"></script>
+</body>
+</html>

@@ -48,11 +48,29 @@ const sqlite3 = require('sqlite3').verbose();
 function Work(request, response) {
     if (request.method == 'POST') {
 
-        
-
-        if (request.url =='/reg') {
+        if (request.url == '/delete') {
             request.on('data', function (data) {
-                var person = JSON.parse(data);    
+                var task = JSON.parse(data);
+
+                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
+
+
+                db.get('SELECT * FROM Tasks WHERE id=?', task['id'], (err, row) => {
+                    if (err) {
+                        return console.error(err.message);
+                    }
+                    if (row) {
+                        db.run('DELETE FROM Tasks WHERE id=?',task['id']);
+                    }
+                });
+
+                db.close();
+            });
+        }
+
+        if (request.url == '/reg') {
+            request.on('data', function (data) {
+                var person = JSON.parse(data);
 
                 let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
 
@@ -72,8 +90,8 @@ function Work(request, response) {
                 });
 
                 db.close();
-            });                  
-        }  
+            });
+        }
 
         if (request.url == '/check_pass') {
             request.on('data', function (data) {
@@ -89,17 +107,8 @@ function Work(request, response) {
 
                     if (person['password'] == row.password) {
 
-                        db.all('SELECT * FROM Tasks WHERE user_id =?', row.id, (err, rows) => {
-                            if (err) {
-                                throw err;
-                            }
-                            var tasks = JSON.stringify(rows);
-                            response.end(tasks);
-
-                            /*rows.forEach((row) => {
-                                console.log(row.name);
-                            });*/
-                        });
+                        var user_id = JSON.stringify(row.id);
+                        response.end(user_id);
                     }
                     else {
                         response.end('false');
@@ -108,7 +117,52 @@ function Work(request, response) {
 
                 db.close();
             });
-        }       
+        }
+
+        if (request.url == '/update') {
+            request.on('data', function (data) {
+                var task = JSON.parse(data);
+
+                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
+
+
+                db.get('SELECT * FROM Tasks WHERE id=?', task['id'], (err, row) => {
+                    if (err) {
+                        return console.error(err.message);
+                    }
+                    if (row) {
+
+                        db.run('UPDATE Tasks SET title=?, body=?, completed=? WHERE id=?', task['title'], task['body'], task['completed'], task['id']);
+                    }
+                    else {
+                        db.run('INSERT INTO Tasks VALUES(?,?,?,?,?)', task['id'], task['title'], task['body'], task['user_id'],  task['completed']);
+                    }
+                });
+                
+                db.close();
+            });
+        }
+
+        if (request.url == '/get_posts') {
+            request.on('data', function (data) {
+                var person = JSON.parse(data);
+
+                let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
+
+                db.all('SELECT * FROM Tasks WHERE user_id =?', person, (err, rows) => {
+                    if (err) {
+                        throw err;
+                    }
+                    var tasks = JSON.stringify(rows);
+                    response.end(tasks);
+
+                });
+
+                db.close();
+            });
+        }
+
+
     }
 }
 

@@ -1,3 +1,5 @@
+
+
 function stringToHash(string) {
 
     var hash = 0;
@@ -31,6 +33,23 @@ Edit =  {
     },
     methods: {
         save() {
+            this.post['user_id'] = window.localStorage.getItem('user');
+            $.ajax({
+                type: "POST",
+                url: '/update',
+                data: JSON.stringify(this.post),
+            }).done(function (result) {
+               
+            });
+        },
+        del() {
+            $.ajax({
+                type: "POST",
+                url: '/delete',
+                data: JSON.stringify(this.post),
+            }).done(function (result) {
+
+            });
         }
     },
     template: `
@@ -39,7 +58,10 @@ Edit =  {
          <input v-model="post['title']">
          Body:
          <input v-model="post['body']">
+         Completed:
+         <input type="checkbox" v-model="post['completed']">
          <button v-on:click="save">Save</button>
+         <button v-on:click="del">Delete</button>
       </div>
     `
 }
@@ -47,8 +69,24 @@ Edit =  {
 Vue.component('blog-post', {
     props: ['id','title', 'body', 'completed'],
     methods: {
-        show() {
-
+       show() {
+            var url = "https://jsonplaceholder.typicode.com/posts";   
+            var i = this.id;
+            var index = i % 100;
+            $.ajax({
+            type: "GET",
+            url: url,
+            }).done(function (result) {
+                mas = JSON.stringify(result[i % 100]);
+                ob = JSON.parse(mas);
+                div = document.getElementById(i);
+                h5 = document.createElement('h5');
+                h6 = document.createElement('h6');
+                h5.textContent = ob.title;
+                h6.textContent = ob.body;
+                div.append(h5);
+                div.append(h6);
+            });
         },
         send() {
             current = {
@@ -57,11 +95,10 @@ Vue.component('blog-post', {
                 body: this.body,
                 completed: this.completed,                
             }
-            alert("Allo");
         }
     },
     template: `
-      <div>
+      <div :id="id">
        <router-link to='/edit'><button v-on:click="send">Edit</button></router-link>
        <h1>{{ title }}</h1>
        <p>{{body}}</p>
@@ -71,20 +108,60 @@ Vue.component('blog-post', {
     `
 })
 
-posts= [
-   
+gposts= [
+    
 ]
+
+function Help(res,gp) {
+    window.localStorage.setItem('gposts', res);
+}
 
 Home = {
     data() {
         return {
-            posts: posts
+            posts: gposts,
+            selected: 1,
         }
+    },
+    methods: {
+        Help(res) {
+            window.localStorage.setItem('gposts', res);
+        },
+        onChange(event) {
+            this.posts.sort(function compareNumbers(a, b) {
+                return a['title'] - b['title'];
+            } );
+            
+        }
+    },
+    beforeCreate: function () {
+        var user_id = window.localStorage.getItem('user');
+        if (user_id) {
+            $.ajax({
+                type: "POST",
+                url: '/get_posts',
+                data: JSON.stringify(user_id),
+                success: (response, gposts) =>{
+                    Help(response, gposts);
+                    gposts = JSON.parse(window.localStorage.getItem('gposts'));
+                    this.posts = gposts;
+                }
+            })
+        }         
+       // gposts = JSON.parse(window.localStorage.getItem('gposts'));
+        //this.posts = gposts;
     },
     template: `
        <div>
+         <select  @change="onChange($event)" v-model="selected">
+           <option disabled value="">Choose sort</option>
+           <option>Name</option>
+           <option>Completed</option>
+         </select>
+         <router-link to='/edit'><button>Create</button></router-link>
          <blog-post
           v-for="post in posts"
+          v-bind:key="post.id"
           v-bind:id="post.id"
           v-bind:title="post.title"
           v-bind:body="post.body"
@@ -147,7 +224,8 @@ const Login = {
                 data: JSON.stringify(user),
             }).done(function (result) {
                 if (result != 'false') {
-                    posts = JSON.parse(result);
+                    var user_id = JSON.parse(result);
+                    window.localStorage.setItem('user', user_id.toString());
                 }
                 else {
                     alert("Check data");
@@ -167,7 +245,8 @@ const Login = {
 }
 const Logout = {
     created: function () {
-        posts=[]
+        window.localStorage.clear();
+        gposts = [];
     },
     template: `
     <p>Logout</p>
