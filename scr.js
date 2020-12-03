@@ -34,6 +34,9 @@ Edit =  {
     methods: {
         save() {
             this.post['user_id'] = window.localStorage.getItem('user');
+            if (!this.post['completed']) {
+                this.post['completed'] = false;
+            }
             $.ajax({
                 type: "POST",
                 url: '/update',
@@ -41,6 +44,7 @@ Edit =  {
             }).done(function (result) {
                
             });
+            current = {};
         },
         del() {
             $.ajax({
@@ -67,26 +71,34 @@ Edit =  {
 }
 
 Vue.component('blog-post', {
+    data() {
+        return {
+            isshow: false
+        }
+    },
     props: ['id','title', 'body', 'completed'],
     methods: {
-       show() {
-            var url = "https://jsonplaceholder.typicode.com/posts";   
-            var i = this.id;
-            var index = i % 100;
-            $.ajax({
-            type: "GET",
-            url: url,
-            }).done(function (result) {
-                mas = JSON.stringify(result[i % 100]);
-                ob = JSON.parse(mas);
-                div = document.getElementById(i);
-                h5 = document.createElement('h5');
-                h6 = document.createElement('h6');
-                h5.textContent = ob.title;
-                h6.textContent = ob.body;
-                div.append(h5);
-                div.append(h6);
-            });
+        show() {
+            if (!this.isshow) {
+                var url = "https://jsonplaceholder.typicode.com/posts";
+                var i = this.id;
+                var index = i % 100;
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                }).done(function (result) {
+                    mas = JSON.stringify(result[i % 100]);
+                    ob = JSON.parse(mas);
+                    div = document.getElementById(i);
+                    h5 = document.createElement('h5');
+                    h6 = document.createElement('h6');
+                    h5.textContent = ob.title;
+                    h6.textContent = ob.body;
+                    div.append(h5);
+                    div.append(h6);
+                });
+                this.isshow = true;
+            }
         },
         send() {
             current = {
@@ -121,6 +133,7 @@ Home = {
         return {
             posts: gposts,
             selected: "",
+            isuser: window.localStorage.getItem('user'),
         }
     },
     methods: {
@@ -179,17 +192,15 @@ Home = {
                 }
             })
         }         
-       // gposts = JSON.parse(window.localStorage.getItem('gposts'));
-        //this.posts = gposts;
     }, 
     template:`
      <div>
-      <select  @change="onChange($event)" v-model="selected">
+      <select v-if="isuser" @change="onChange($event)" v-model="selected">
           <option disabled value="">Choose sort</option>
           <option>Name</option>
           <option>Completed</option>
       </select>
-      <router-link to='/edit'><button>Create</button></router-link>
+      <router-link v-if="isuser" to='/edit'><button>Create</button></router-link>
       <div v-bind:is="dynamicComponent" v-bind:posts=posts v-bind:selected=selected>
       </div>
      </div>
@@ -204,19 +215,24 @@ const Register = {
     },
     methods: {
         save() {
-            var url = '/reg';
-            var pass = stringToHash(this.password);
-            user = {
-                login: this.name,
-                password: pass,
+            if (name != "" && password != "") {
+                var url = '/reg';
+                var pass = stringToHash(this.password);
+                user = {
+                    login: this.name,
+                    password: pass,
+                }
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: JSON.stringify(user),
+                }).done(function (result) {
+                    alert(result);
+                });
             }
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(user),
-            }).done(function (result) {
-                alert(result);
-            });
+            else {
+                alert("Enter the data");
+            }
         },
     },
     template: ` 
