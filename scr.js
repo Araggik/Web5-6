@@ -1,5 +1,3 @@
-
-
 function stringToHash(string) {
 
     var hash = 0;
@@ -25,50 +23,7 @@ current = {
 
 }
 
-Edit =  {
-    data() {
-        return {
-            post: current
-        }
-    },
-    methods: {
-        save() {
-            this.post['user_id'] = window.localStorage.getItem('user');
-            if (!this.post['completed']) {
-                this.post['completed'] = false;
-            }
-            $.ajax({
-                type: "POST",
-                url: '/update',
-                data: JSON.stringify(this.post),
-            }).done(function (result) {
-               
-            });
-            current = {};
-        },
-        del() {
-            $.ajax({
-                type: "POST",
-                url: '/delete',
-                data: JSON.stringify(this.post),
-            }).done(function (result) {
 
-            });
-        }
-    },
-    template: `
-       <div>
-         Title:
-         <input v-model="post['title']">
-         Body:
-         <input v-model="post['body']">
-         Completed:
-         <input type="checkbox" v-model="post['completed']">
-         <button v-on:click="save">Save</button>
-         <button v-on:click="del">Delete</button>
-      </div>
-    `
-}
 
 Vue.component('blog-post', {
     data() {
@@ -110,11 +65,11 @@ Vue.component('blog-post', {
         }
     },
     template: `
-      <div :id="id">
+      <div :id="id" class="blog">
        <router-link to='/edit'><button v-on:click="send">Edit</button></router-link>
-       <h1>{{ title }}</h1>
-       <p>{{body}}</p>
-       <p>Complete:{{completed}}</p>
+       <h1 class="titl">{{ title }}</h1>
+       <p class="bod">{{body}}</p>
+       <p class="comp">Complete:{{completed}}</p>
        <button v-on:click="show">Show Comment</button>
       </div>
     `
@@ -206,6 +161,18 @@ Home = {
      </div>
     `
 }
+
+
+const Logout = {
+    created: function () {
+        window.localStorage.clear();
+        gposts = [];
+    },
+    template: `
+    <p>Logout</p>
+    `
+}
+
 const Register = {
     data() {
         return {
@@ -215,7 +182,7 @@ const Register = {
     },
     methods: {
         save() {
-            if (name != "" && password != "") {
+            if (this.name != "" && this.password != "") {
                 var url = '/reg';
                 var pass = stringToHash(this.password);
                 user = {
@@ -245,6 +212,7 @@ const Register = {
        </div>
     `
 }
+
 const Login = {
     data() {
         return {
@@ -284,13 +252,49 @@ const Login = {
        </div>
     `
 }
-const Logout = {
-    created: function () {
-        window.localStorage.clear();
-        gposts = [];
+
+const Edit = {
+    data() {
+        return {
+            post: current
+        }
+    },
+    methods: {
+        save() {
+            this.post['user_id'] = window.localStorage.getItem('user');
+            if (!this.post['completed']) {
+                this.post['completed'] = false;
+            }
+            $.ajax({
+                type: "POST",
+                url: '/update',
+                data: JSON.stringify(this.post),
+            }).done(function (result) {
+
+            });
+            current = {};
+        },
+        del() {
+            $.ajax({
+                type: "POST",
+                url: '/delete',
+                data: JSON.stringify(this.post),
+            }).done(function (result) {
+
+            });
+        }
     },
     template: `
-    <p>Logout</p>
+       <div>
+         Title:
+         <input v-model="post['title']">
+         Body:
+         <input v-model="post['body']">
+         Completed:
+         <input type="checkbox" v-model="post['completed']">
+         <button v-on:click="save">Save</button>
+         <button v-on:click="del">Delete</button>
+      </div>
     `
 }
 
