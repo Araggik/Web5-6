@@ -37,8 +37,18 @@ http.createServer(function (req, res) {
                 }
             });
         }
+        else {
+            if (req.method == 'GET') {
+
+                res.writeHead(404);
+                res.end();
+
+            } 
+        }
 
     })
+
+    
 
     Work(req, res);
     
@@ -49,7 +59,9 @@ function Work(request, response) {
     if (request.method == 'POST') {
 
         if (request.url == '/delete') {
+            console.log('/delete');
             request.on('data', function (data) {
+
                 var task = JSON.parse(data);
 
                 let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
@@ -57,18 +69,20 @@ function Work(request, response) {
 
                 db.get('SELECT * FROM Tasks WHERE id=?', task['id'], (err, row) => {
                     if (err) {
+                        response.end('false');
                         return console.error(err.message);
                     }
                     if (row) {
-                        db.run('DELETE FROM Tasks WHERE id=?',task['id']);
+                        db.run('DELETE FROM Tasks WHERE id=?', task['id']);
+                        response.end('delete');
+                        console.log('delete');
                     }
                 });
 
                 db.close();
             });
         }
-
-        if (request.url == '/reg') {
+        else if (request.url == '/reg') {
             request.on('data', function (data) {
                 var person = JSON.parse(data);
 
@@ -77,6 +91,7 @@ function Work(request, response) {
 
                 db.get('SELECT * FROM User WHERE login =?', person['login'], (err, row) => {
                     if (err) {
+
                         return console.error(err.message);
                     }
 
@@ -86,14 +101,14 @@ function Work(request, response) {
                     else {
                         db.run('INSERT INTO user(login,password) VALUES(?,?)', person['login'], person['password']);
                         response.end('ok');
+                        console.log('insert user');
                     }
                 });
 
                 db.close();
             });
         }
-
-        if (request.url == '/check_pass') {
+        else if (request.url == '/check_pass') {
             request.on('data', function (data) {
                 var person = JSON.parse(data);
 
@@ -118,9 +133,10 @@ function Work(request, response) {
                 db.close();
             });
         }
-
-        if (request.url == '/update') {
+        else if (request.url == '/update') {
+            console.log('/update');
             request.on('data', function (data) {
+
                 var task = JSON.parse(data);
 
                 let db = new sqlite3.Database('tasks.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE);
@@ -128,22 +144,26 @@ function Work(request, response) {
 
                 db.get('SELECT * FROM Tasks WHERE id=?', task['id'], (err, row) => {
                     if (err) {
+                        response.end('false');
                         return console.error(err.message);
                     }
                     if (row) {
 
                         db.run('UPDATE Tasks SET title=?, body=?, completed=? WHERE id=?', task['title'], task['body'], task['completed'], task['id']);
+                        response.end('update');
+                        console.log('update task');
                     }
                     else {
-                        db.run('INSERT INTO Tasks VALUES(?,?,?,?,?)', task['id'], task['title'], task['body'], task['user_id'],  task['completed']);
+                        db.run('INSERT INTO Tasks VALUES(?,?,?,?,?)', task['id'], task['title'], task['body'], task['user_id'], task['completed']);
+                        response.end('insert');
+                        console.log('insert task');
                     }
                 });
-                
+
                 db.close();
             });
         }
-
-        if (request.url == '/get_posts') {
+        else if (request.url == '/get_posts') {
             request.on('data', function (data) {
                 var person = JSON.parse(data);
 
@@ -161,7 +181,10 @@ function Work(request, response) {
                 db.close();
             });
         }
-
+        else {
+            res.writeHead(404);
+            res.end();
+        }
 
     }
 }

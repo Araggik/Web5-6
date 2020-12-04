@@ -1,3 +1,8 @@
+$.ajaxSetup({
+    global: false,
+    cache: false
+});
+
 function stringToHash(string) {
 
     var hash = 0;
@@ -79,14 +84,12 @@ gposts= [
     
 ]
 
-function Help(res,gp) {
-    window.localStorage.setItem('gposts', res);
-}
+firstload=true
 
 Home = {
     data() {
         return {
-            posts: gposts,
+            posts: [],
             selected: "",
             isuser: window.localStorage.getItem('user'),
         }
@@ -135,17 +138,21 @@ Home = {
     },
     beforeCreate: function () {
         var user_id = window.localStorage.getItem('user');
-        if (user_id) {
+        if (user_id&&firstload) {
             $.ajax({
                 type: "POST",
                 url: '/get_posts',
                 data: JSON.stringify(user_id),
                 success: (response, gposts) =>{
-                    Help(response, gposts);
+                    window.localStorage.setItem('gposts', response);
                     gposts = JSON.parse(window.localStorage.getItem('gposts'));
                     this.posts = gposts;
                 }
             })
+
+            //firstload = false;
+            //gposts = JSON.parse(window.localStorage.getItem('gposts'));
+            //alert(gposts);
         }         
     }, 
     template:`
@@ -263,25 +270,49 @@ const Edit = {
         save() {
             this.post['user_id'] = window.localStorage.getItem('user');
             if (!this.post['completed']) {
-                this.post['completed'] = false;
+                this.post['completed'] = 0;
             }
+ 
             $.ajax({
                 type: "POST",
                 url: '/update',
-                data: JSON.stringify(this.post),
-            }).done(function (result) {
-
-            });
+                contentType: false,
+                processData: false,
+                data: JSON.stringify(this.post),                          
+            })
             current = {};
+
+            //let findel = false;
+            //alert(gposts);
+            //gposts.forEach(function (item, index, array) {
+            //    if (item.id == this.post['id']) {
+            //        item.title = this.post['title'];
+            //        item.body = this.post['body'];
+            //        item.completed = this.post['completed'];
+            //        findel = true;
+            //    }
+            //});
+            //if (!findel) {
+            //    gposts.push({ id: this.post['id'], title: this.post['title'], body: this.post['body'], user_id: this.post['user_id'], completed: this.post['completed'] });
+            //}
         },
         del() {
+
             $.ajax({
                 type: "POST",
                 url: '/delete',
-                data: JSON.stringify(this.post),
-            }).done(function (result) {
+                contentType: false,
+                processData: false,
+                data: JSON.stringify(this.post),               
+            })
+            current = {};
 
-            });
+            //alert(gposts);
+            //gposts.forEach(function (item, index, array) {
+            //    if (item.id == this.post['id']) {
+            //        array.slice(index, 1);
+            //    }
+            //});
         }
     },
     template: `
